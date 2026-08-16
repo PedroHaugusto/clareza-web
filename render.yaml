@@ -1,0 +1,36 @@
+services:
+  - type: web
+    name: clareza-web
+    # Site estatico: o Angular gera HTML, CSS e JS prontos, sem servidor Node por tras.
+    # O plano de site estatico do Render nao hiberna — a espera de cold start e so da API.
+    runtime: static
+    branch: master
+    # Desligado de proposito: quem dispara o deploy e o workflow de CI, depois dos testes.
+    autoDeploy: false
+
+    buildCommand: npm ci && npm run build
+    # O builder do Angular separa em `browser/` o que de fato vai para o navegador.
+    staticPublishPath: ./dist/clareza-web/browser
+
+    routes:
+      # As rotas do app vivem no cliente. Sem esta regra, recarregar em /lancamentos faria o
+      # servidor procurar um arquivo com esse nome e responder 404 — o usuario perderia a
+      # pagina a cada F5.
+      - type: rewrite
+        source: /*
+        destination: /index.html
+
+    headers:
+      # Os bundles levam hash no nome (`main-D33VTYLM.js`), entao um deploy novo gera nomes
+      # novos e o cache antigo nunca serve conteudo errado.
+      - path: /*.js
+        name: Cache-Control
+        value: public, max-age=31536000, immutable
+      - path: /*.css
+        name: Cache-Control
+        value: public, max-age=31536000, immutable
+      # O index.html e a excecao: e ele que aponta para os bundles da versao nova. Cacheado,
+      # o navegador continuaria pedindo arquivos que o deploy anterior levou embora.
+      - path: /index.html
+        name: Cache-Control
+        value: no-cache

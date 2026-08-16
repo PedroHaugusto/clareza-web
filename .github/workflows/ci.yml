@@ -1,0 +1,54 @@
+name: CI
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+
+jobs:
+  build:
+    name: Build e testes
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Baixa o codigo
+        uses: actions/checkout@v4
+
+      # Mesma linha usada no desenvolvimento. O Angular 22 exige Node 20.19+, 22.12+ ou 24.
+      - name: Configura o Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+
+      # `npm ci` respeita o package-lock a risca: o CI instala exatamente o que foi testado.
+      - name: Instala as dependencias
+        run: npm ci
+
+      # `--watch=false` e obrigatorio: sem ele o runner ficaria preso esperando mudancas.
+      - name: Testes
+        run: npm test -- --watch=false
+
+      - name: Build de producao
+        run: npm run build
+
+  deploy:
+    name: Deploy no Render
+    runs-on: ubuntu-latest
+    needs: build
+    # So a master publica, e so depois dos testes passarem. Pull request nao faz deploy.
+    if: github.ref == 'refs/heads/master' && github.event_name == 'push'
+
+    steps:
+      - name: Dispara o deploy
+        env:
+          RENDER_DEPLOY_HOOK: ${{ secrets.RENDER_DEPLOY_HOOK }}
+        run: |
+          if [ -z "$RENDER_DEPLOY_HOOK" ]; then
+            echo "RENDER_DEPLOY_HOOK nao configurado nos secrets do repositorio."
+            echo "O build passou, mas nenhum deploy foi disparado."
+            exit 0
+          fi
+          curl --fail --silent --show-error "$RENDER_DEPLOY_HOOK"
+          echo "Deploy solicitado ao Render."
