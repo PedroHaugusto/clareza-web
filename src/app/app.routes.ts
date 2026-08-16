@@ -23,6 +23,11 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./features/visao-geral/visao-geral').then((m) => m.VisaoGeral),
       },
+      {
+        path: 'lancamentos',
+        loadComponent: () =>
+          import('./features/lancamentos/lancamentos').then((m) => m.Lancamentos),
+      },
       { path: '', pathMatch: 'full', redirectTo: 'visao-geral' },
     ],
   },

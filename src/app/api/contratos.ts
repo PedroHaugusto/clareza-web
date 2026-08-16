@@ -1,4 +1,4 @@
-import { components } from './tipos';
+import { components, operations } from './tipos';
 
 /**
  * Apelidos legiveis para os schemas gerados do OpenAPI.
@@ -28,3 +28,19 @@ export type VisaoGeral = components['schemas']['RespostaVisaoGeral'];
 
 /** Fechamento de um mes: realizado, previsto e o total de cada lado. */
 export type ResumoDoMes = components['schemas']['RespostaResumoDoMes'];
+
+/** Um lancamento. `valor` e sempre positivo — o sinal vem de `tipo`. */
+export type Transacao = components['schemas']['RespostaTransacao'];
+
+export type Categoria = components['schemas']['RespostaCategoria'];
+export type Conta = components['schemas']['RespostaConta'];
+
+/**
+ * Filtros de `GET /api/transacoes`, todos opcionais e combinaveis. Tirados da operacao gerada
+ * para nao existir uma segunda definicao dos valores aceitos.
+ */
+export type FiltroDeTransacoes = NonNullable<operations['listar']['parameters']['query']>;
+
+export type TipoTransacao = NonNullable<Transacao['tipo']>;
+export type StatusTransacao = NonNullable<Transacao['status']>;
+export type PeriodoDeBusca = NonNullable<FiltroDeTransacoes['periodo']>;

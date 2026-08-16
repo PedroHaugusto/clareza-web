@@ -1,14 +1,11 @@
 import { Component, inject } from '@angular/core';
-import { Router, RouterOutlet } from '@angular/router';
+import { Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { AuthService } from '../../core/sessao/auth.service';
 
-/**
- * Casca das rotas protegidas. Por enquanto so cabecalho e ponto de saida do roteador — a
- * navegacao entre areas entra quando existirem telas para navegar.
- */
+/** Casca das rotas protegidas: cabecalho, navegacao e ponto de saida do roteador. */
 @Component({
   selector: 'app-area-logada',
-  imports: [RouterOutlet],
+  imports: [RouterLink, RouterLinkActive, RouterOutlet],
   templateUrl: './area-logada.html',
 })
 export class AreaLogada {

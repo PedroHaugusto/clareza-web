@@ -49,6 +49,14 @@ describe('AreaLogada', () => {
     expect(elemento.textContent).toContain('Ana');
   });
 
+  it('ofereceNavegacaoParaAsAreasDoApp', () => {
+    const destinos = [...elemento.querySelectorAll('nav a')].map((link) =>
+      link.getAttribute('href'),
+    );
+
+    expect(destinos).toEqual(['/visao-geral', '/lancamentos']);
+  });
+
   it('limpaASessaoEVoltaParaOLogin_quandoOUsuarioSai', () => {
     (elemento.querySelector('button') as HTMLButtonElement).click();
     fixture.detectChanges();

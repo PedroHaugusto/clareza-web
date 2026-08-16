@@ -1,7 +1,26 @@
 <div class="min-h-screen bg-slate-50">
   <header class="border-b border-slate-200 bg-white">
-    <div class="mx-auto flex max-w-5xl items-center justify-between px-6 py-4">
-      <p class="text-sm font-semibold uppercase tracking-widest text-emerald-600">Clareza</p>
+    <div class="mx-auto flex max-w-5xl flex-wrap items-center justify-between gap-4 px-6 py-4">
+      <div class="flex items-center gap-6">
+        <p class="text-sm font-semibold uppercase tracking-widest text-emerald-600">Clareza</p>
+
+        <nav class="flex items-center gap-4 text-sm">
+          <a
+            routerLink="/visao-geral"
+            routerLinkActive="text-emerald-700 font-medium"
+            class="text-slate-600 transition hover:text-slate-900"
+          >
+            Visao geral
+          </a>
+          <a
+            routerLink="/lancamentos"
+            routerLinkActive="text-emerald-700 font-medium"
+            class="text-slate-600 transition hover:text-slate-900"
+          >
+            Lancamentos
+          </a>
+        </nav>
+      </div>
 
       <div class="flex items-center gap-4">
         @if (usuario(); as logado) {
