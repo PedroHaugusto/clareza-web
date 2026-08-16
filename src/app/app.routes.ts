@@ -19,10 +19,11 @@ export const routes: Routes = [
     loadComponent: () => import('./layout/area-logada/area-logada').then((m) => m.AreaLogada),
     children: [
       {
-        path: 'inicio',
-        loadComponent: () => import('./features/inicio/inicio').then((m) => m.Inicio),
+        path: 'visao-geral',
+        loadComponent: () =>
+          import('./features/visao-geral/visao-geral').then((m) => m.VisaoGeral),
       },
-      { path: '', pathMatch: 'full', redirectTo: 'inicio' },
+      { path: '', pathMatch: 'full', redirectTo: 'visao-geral' },
     ],
   },
   { path: '**', redirectTo: '' },

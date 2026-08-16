@@ -22,3 +22,9 @@ export type UsuarioLogado = components['schemas']['RespostaUsuario'];
 
 export type RequisicaoDeRegistro = components['schemas']['RequisicaoDeRegistro'];
 export type RequisicaoDeLogin = components['schemas']['RequisicaoDeLogin'];
+
+/** Corpo de `GET /api/visao-geral` — os dois saldos, o mes atual e os proximos tres. */
+export type VisaoGeral = components['schemas']['RespostaVisaoGeral'];
+
+/** Fechamento de um mes: realizado, previsto e o total de cada lado. */
+export type ResumoDoMes = components['schemas']['RespostaResumoDoMes'];
