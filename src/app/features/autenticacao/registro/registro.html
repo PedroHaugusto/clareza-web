@@ -1,0 +1,89 @@
+<main class="flex min-h-screen items-center justify-center bg-slate-50 p-6">
+  <div class="w-full max-w-sm">
+    <p class="text-xs font-semibold uppercase tracking-widest text-emerald-600">Clareza</p>
+    <h1 class="mt-2 text-2xl font-semibold text-slate-900">Criar conta</h1>
+    <p class="mt-1 text-sm text-slate-600">
+      Sua conta ja nasce com as contas e categorias basicas prontas.
+    </p>
+
+    <form
+      class="mt-8 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm"
+      [formGroup]="formulario"
+      (ngSubmit)="enviar()"
+    >
+      @if (erro(); as falha) {
+        <p
+          class="mb-5 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700"
+          role="alert"
+        >
+          {{ falha.mensagem }}
+        </p>
+      }
+
+      <label class="block text-sm font-medium text-slate-700" for="nome">Nome</label>
+      <input
+        id="nome"
+        type="text"
+        autocomplete="name"
+        formControlName="nome"
+        class="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-slate-900 outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100"
+      />
+      @if (formulario.controls.nome.touched && formulario.controls.nome.invalid) {
+        <p class="mt-1 text-xs text-red-600">Informe seu nome.</p>
+      } @else if (erroDoCampo('nome'); as mensagem) {
+        <p class="mt-1 text-xs text-red-600">{{ mensagem }}</p>
+      }
+
+      <label class="mt-5 block text-sm font-medium text-slate-700" for="email">E-mail</label>
+      <input
+        id="email"
+        type="email"
+        autocomplete="email"
+        formControlName="email"
+        class="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-slate-900 outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100"
+      />
+      @if (formulario.controls.email.touched && formulario.controls.email.invalid) {
+        <p class="mt-1 text-xs text-red-600">Informe um e-mail valido.</p>
+      } @else if (erroDoCampo('email'); as mensagem) {
+        <p class="mt-1 text-xs text-red-600">{{ mensagem }}</p>
+      }
+
+      <label class="mt-5 block text-sm font-medium text-slate-700" for="senha">Senha</label>
+      <input
+        id="senha"
+        type="password"
+        autocomplete="new-password"
+        formControlName="senha"
+        class="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-slate-900 outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100"
+      />
+      @if (formulario.controls.senha.touched && formulario.controls.senha.invalid) {
+        <p class="mt-1 text-xs text-red-600">
+          A senha precisa de pelo menos {{ tamanhoMinimoDaSenha }} caracteres.
+        </p>
+      } @else if (erroDoCampo('senha'); as mensagem) {
+        <p class="mt-1 text-xs text-red-600">{{ mensagem }}</p>
+      } @else {
+        <p class="mt-1 text-xs text-slate-500">Minimo de {{ tamanhoMinimoDaSenha }} caracteres.</p>
+      }
+
+      <button
+        type="submit"
+        [disabled]="enviando()"
+        class="mt-6 w-full rounded-lg bg-emerald-600 px-4 py-2 font-medium text-white transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:bg-emerald-300"
+      >
+        {{ enviando() ? 'Criando conta...' : 'Criar conta' }}
+      </button>
+
+      @if (enviando()) {
+        <p class="mt-2 text-center text-xs text-slate-500">
+          Se demorar, o servidor esta acordando.
+        </p>
+      }
+    </form>
+
+    <p class="mt-6 text-center text-sm text-slate-600">
+      Ja tem conta?
+      <a routerLink="/login" class="font-medium text-emerald-700 hover:underline">Entrar</a>
+    </p>
+  </div>
+</main>

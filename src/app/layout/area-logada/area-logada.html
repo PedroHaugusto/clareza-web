@@ -1,0 +1,24 @@
+<div class="min-h-screen bg-slate-50">
+  <header class="border-b border-slate-200 bg-white">
+    <div class="mx-auto flex max-w-5xl items-center justify-between px-6 py-4">
+      <p class="text-sm font-semibold uppercase tracking-widest text-emerald-600">Clareza</p>
+
+      <div class="flex items-center gap-4">
+        @if (usuario(); as logado) {
+          <span class="text-sm text-slate-600">{{ logado.nome }}</span>
+        }
+        <button
+          type="button"
+          (click)="sair()"
+          class="rounded-lg border border-slate-300 px-3 py-1.5 text-sm font-medium text-slate-700 transition hover:bg-slate-100"
+        >
+          Sair
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main class="mx-auto max-w-5xl px-6 py-8">
+    <router-outlet />
+  </main>
+</div>
