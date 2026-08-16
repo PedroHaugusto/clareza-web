@@ -43,6 +43,10 @@ export const routes: Routes = [
           import('./features/projecoes/fluxo-de-caixa/fluxo-de-caixa').then((m) => m.FluxoDeCaixa),
       },
       {
+        path: 'metas',
+        loadComponent: () => import('./features/metas/metas').then((m) => m.Metas),
+      },
+      {
         path: 'cadastros',
         loadComponent: () => import('./features/cadastros/cadastros').then((m) => m.Cadastros),
       },

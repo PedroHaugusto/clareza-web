@@ -45,6 +45,23 @@ export type RequisicaoDeTransacao = components['schemas']['RequisicaoDeTransacao
 export type RequisicaoDeParcelamento = components['schemas']['RequisicaoDeParcelamento'];
 export type RequisicaoDeRecorrencia = components['schemas']['RequisicaoDeRecorrencia'];
 
+/** Uma meta financeira. Os derivados (percentual, restante, prazo) ja vem calculados. */
+export type MetaFinanceira = components['schemas']['RespostaMetaFinanceira'];
+export type RequisicaoDeMeta = components['schemas']['RequisicaoDeMetaFinanceira'];
+
+/** Carteira consolidada devolvida por `GET /api/investimentos`. */
+export type Carteira = components['schemas']['RespostaCarteira'];
+export type Investimento = components['schemas']['RespostaInvestimento'];
+export type RequisicaoDeInvestimento = components['schemas']['RequisicaoDeInvestimento'];
+
+/**
+ * Unica excecao ao `non_null` da API: `valor` sempre aparece, podendo vir nulo, acompanhado
+ * de `definida`.
+ */
+export type MetaDeAporte = components['schemas']['RespostaMetaAporte'];
+
+export type TipoInvestimento = RequisicaoDeInvestimento['tipo'];
+
 /** Corpo de `GET /api/previsao` — o cenario aplicado e os meses projetados. */
 export type Previsao = components['schemas']['RespostaPrevisao'];
 

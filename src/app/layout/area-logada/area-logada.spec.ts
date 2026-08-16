@@ -60,6 +60,7 @@ describe('AreaLogada', () => {
       '/calendario',
       '/previsao',
       '/fluxo-de-caixa',
+      '/metas',
       '/cadastros',
     ]);
   });

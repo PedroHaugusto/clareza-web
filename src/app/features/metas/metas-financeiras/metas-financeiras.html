@@ -1,0 +1,268 @@
+<section class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+  <div class="flex items-center justify-between gap-3">
+    <h2 class="text-lg font-semibold text-slate-900">Metas financeiras</h2>
+    <button
+      type="button"
+      (click)="abrirCriacao()"
+      class="rounded-lg bg-emerald-600 px-3 py-1.5 text-sm font-medium text-white transition hover:bg-emerald-700"
+    >
+      Nova meta
+    </button>
+  </div>
+
+  @if (erro(); as falha) {
+    @if (!formularioAberto()) {
+      <p
+        class="mt-4 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-800"
+        role="alert"
+      >
+        {{ falha.mensagem }}
+      </p>
+    }
+  }
+
+  @if (carregando()) {
+    <p class="mt-4 text-slate-600">Carregando metas...</p>
+  } @else if (erroAoCarregar(); as falha) {
+    <div class="mt-4 rounded-lg border border-red-200 bg-red-50 p-4 text-center" role="alert">
+      <p class="text-sm text-red-700">{{ falha.mensagem }}</p>
+      <button
+        type="button"
+        (click)="carregar()"
+        class="mt-3 rounded-lg bg-red-600 px-3 py-1.5 text-sm font-medium text-white transition hover:bg-red-700"
+      >
+        Tentar de novo
+      </button>
+    </div>
+  } @else if (metas().length === 0) {
+    <p class="mt-4 rounded-xl bg-slate-50 px-3 py-6 text-center text-sm text-slate-600">
+      Nenhuma meta ainda. Defina onde voce quer chegar.
+    </p>
+  } @else {
+    <ul class="mt-4 space-y-5">
+      @for (meta of metas(); track meta.id) {
+        <li class="rounded-xl border border-slate-200 p-4">
+          <div class="flex flex-wrap items-start justify-between gap-3">
+            <div class="min-w-0">
+              <p class="truncate font-medium text-slate-900">
+                {{ meta.nome }}
+                @if (meta.concluida) {
+                  <span
+                    class="ml-1 rounded-full bg-emerald-50 px-2 py-0.5 text-xs font-medium text-emerald-700 ring-1 ring-inset ring-emerald-200"
+                  >
+                    Concluida
+                  </span>
+                }
+              </p>
+              @if (meta.descricao) {
+                <p class="mt-0.5 truncate text-sm text-slate-500">{{ meta.descricao }}</p>
+              }
+            </div>
+
+            <div class="flex shrink-0 gap-2">
+              <button
+                type="button"
+                (click)="abrirEdicao(meta)"
+                [attr.aria-label]="'Editar meta ' + meta.nome"
+                class="rounded-lg border border-slate-300 px-2.5 py-1 text-xs font-medium text-slate-700 transition hover:bg-slate-100"
+              >
+                Editar
+              </button>
+              <button
+                type="button"
+                (click)="pedirExclusao(meta)"
+                [attr.aria-label]="'Excluir meta ' + meta.nome"
+                class="rounded-lg border border-red-300 px-2.5 py-1 text-xs font-medium text-red-700 transition hover:bg-red-50"
+              >
+                Excluir
+              </button>
+            </div>
+          </div>
+
+          <div class="mt-3 flex items-baseline justify-between gap-3 text-sm">
+            <span class="text-slate-600">
+              <span class="font-semibold text-slate-900">{{ meta.valorAtual ?? 0 | currency }}</span>
+              de {{ meta.valorObjetivo ?? 0 | currency }}
+            </span>
+            <!-- Meta superada passa de 100%: o numero mostra o valor real. -->
+            <span class="font-semibold tabular-nums text-emerald-700">
+              {{ meta.percentualConcluido ?? 0 | number: '1.0-2' }}%
+            </span>
+          </div>
+
+          <div
+            class="mt-2 h-2 overflow-hidden rounded-full bg-slate-100"
+            role="progressbar"
+            [attr.aria-valuenow]="meta.percentualConcluido ?? 0"
+            aria-valuemin="0"
+            [attr.aria-valuemax]="100"
+            [attr.aria-label]="'Progresso de ' + meta.nome"
+          >
+            <!-- A barra para em 100% para nao vazar do trilho. -->
+            <div
+              class="h-full rounded-full transition-all"
+              [class]="meta.concluida ? 'bg-emerald-600' : 'bg-emerald-500'"
+              [style.width]="larguraDaBarra(meta)"
+            ></div>
+          </div>
+
+          <div class="mt-2 flex flex-wrap items-center justify-between gap-2 text-xs">
+            <span class="text-slate-500">
+              @if ((meta.valorRestante ?? 0) > 0) {
+                Faltam {{ meta.valorRestante ?? 0 | currency }}
+              } @else {
+                Objetivo alcancado
+              }
+            </span>
+
+            <!-- Sem prazo, os tres campos de data nem vem na resposta. -->
+            @if (meta.prazo) {
+              <span
+                [class]="meta.prazoVencido ? 'font-medium text-red-700' : 'text-slate-500'"
+              >
+                {{ comoData(meta.prazo) | date: 'dd MMM y' }}
+                @if (meta.prazoVencido) {
+                  &middot; prazo vencido
+                } @else if (meta.diasAtePrazo !== undefined) {
+                  &middot; {{ meta.diasAtePrazo }} dia(s)
+                }
+              </span>
+            } @else {
+              <span class="text-slate-400">Sem prazo</span>
+            }
+          </div>
+        </li>
+      }
+    </ul>
+  }
+</section>
+
+@if (formularioAberto()) {
+  <div class="fixed inset-0 z-10 flex items-start justify-center overflow-y-auto bg-slate-900/40 p-4 sm:items-center">
+    <form
+      class="w-full max-w-md rounded-2xl border border-slate-200 bg-white p-6 shadow-lg"
+      [formGroup]="formulario"
+      (ngSubmit)="salvar()"
+    >
+      <h3 class="text-lg font-semibold text-slate-900">
+        {{ emFormulario() ? 'Editar meta' : 'Nova meta' }}
+      </h3>
+
+      @if (erro(); as falha) {
+        <p
+          class="mt-4 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700"
+          role="alert"
+        >
+          {{ falha.mensagem }}
+        </p>
+      }
+
+      <div class="mt-4 grid gap-4 sm:grid-cols-2">
+        <label class="sm:col-span-2">
+          <span class="text-sm font-medium text-slate-700">Nome</span>
+          <input
+            type="text"
+            formControlName="nome"
+            class="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-slate-900 outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100"
+          />
+          @if (formulario.controls.nome.touched && formulario.controls.nome.invalid) {
+            <span class="mt-1 block text-xs text-red-600">Informe um nome.</span>
+          } @else if (erroDoCampo('nome'); as mensagem) {
+            <span class="mt-1 block text-xs text-red-600">{{ mensagem }}</span>
+          }
+        </label>
+
+        <label>
+          <span class="text-sm font-medium text-slate-700">Objetivo</span>
+          <input
+            type="number"
+            step="0.01"
+            min="0.01"
+            formControlName="valorObjetivo"
+            class="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-slate-900 outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100"
+          />
+          @if (formulario.controls.valorObjetivo.touched && formulario.controls.valorObjetivo.invalid) {
+            <span class="mt-1 block text-xs text-red-600">Informe um valor maior que zero.</span>
+          }
+        </label>
+
+        <label>
+          <span class="text-sm font-medium text-slate-700">Ja guardado</span>
+          <input
+            type="number"
+            step="0.01"
+            min="0"
+            formControlName="valorAtual"
+            class="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-slate-900 outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100"
+          />
+          <span class="mt-1 block text-xs text-slate-500">
+            E aqui que o progresso e atualizado.
+          </span>
+        </label>
+
+        <label>
+          <span class="text-sm font-medium text-slate-700">Prazo (opcional)</span>
+          <input
+            type="date"
+            formControlName="prazo"
+            class="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-slate-900 outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100"
+          />
+        </label>
+
+        <label>
+          <span class="text-sm font-medium text-slate-700">Descricao (opcional)</span>
+          <input
+            type="text"
+            formControlName="descricao"
+            class="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-slate-900 outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100"
+          />
+        </label>
+      </div>
+
+      <div class="mt-6 flex justify-end gap-3">
+        <button
+          type="button"
+          (click)="fechar()"
+          class="rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-100"
+        >
+          Cancelar
+        </button>
+        <button
+          type="submit"
+          [disabled]="salvando()"
+          class="rounded-lg bg-emerald-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:bg-emerald-300"
+        >
+          {{ salvando() ? 'Salvando...' : 'Salvar' }}
+        </button>
+      </div>
+    </form>
+  </div>
+}
+
+@if (aExcluir(); as meta) {
+  <div class="fixed inset-0 z-10 flex items-center justify-center bg-slate-900/40 p-4">
+    <div class="w-full max-w-sm rounded-2xl border border-slate-200 bg-white p-6 shadow-lg">
+      <h3 class="text-lg font-semibold text-slate-900">Excluir meta</h3>
+      <p class="mt-2 text-slate-600">
+        Excluir <span class="font-medium text-slate-900">{{ meta.nome }}</span>?
+      </p>
+
+      <div class="mt-6 flex justify-end gap-3">
+        <button
+          type="button"
+          (click)="desistirDaExclusao()"
+          class="rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-100"
+        >
+          Cancelar
+        </button>
+        <button
+          type="button"
+          (click)="excluir()"
+          class="rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-red-700"
+        >
+          Excluir
+        </button>
+      </div>
+    </div>
+  </div>
+}
