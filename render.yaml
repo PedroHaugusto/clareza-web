@@ -8,6 +8,13 @@ services:
     # Desligado de proposito: quem dispara o deploy e o workflow de CI, depois dos testes.
     autoDeploy: false
 
+    envVars:
+      # O padrao do Render (24.14.1) e mais velho do que o minimo do Angular CLI (24.15.0) e
+      # o build morre antes de comecar. O valor tambem esta em `.node-version`; os dois ficam
+      # aqui porque so este arquivo e visivel para quem configura o servico pelo painel.
+      - key: NODE_VERSION
+        value: 24.18.0
+
     buildCommand: npm ci && npm run build
     # O builder do Angular separa em `browser/` o que de fato vai para o navegador.
     staticPublishPath: ./dist/clareza-web/browser

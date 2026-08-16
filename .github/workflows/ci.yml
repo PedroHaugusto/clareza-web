@@ -15,11 +15,12 @@ jobs:
       - name: Baixa o codigo
         uses: actions/checkout@v4
 
-      # Mesma linha usada no desenvolvimento. O Angular 22 exige Node 20.19+, 22.12+ ou 24.
+      # Le a versao de `.node-version`, o mesmo arquivo que o Render consome. Fonte unica:
+      # se o CI e o deploy usassem numeros diferentes, o build passaria aqui e quebraria la.
       - name: Configura o Node
         uses: actions/setup-node@v4
         with:
-          node-version: '24'
+          node-version-file: '.node-version'
           cache: npm
 
       # `npm ci` respeita o package-lock a risca: o CI instala exatamente o que foi testado.
