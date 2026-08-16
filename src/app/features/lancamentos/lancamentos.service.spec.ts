@@ -58,4 +58,70 @@ describe('LancamentosService', () => {
     expect(requisicao.request.params.get('categoriaId')).toBe('0');
     requisicao.flush([]);
   });
+
+  describe('escrita', () => {
+    const lancamento = {
+      contaId: 1,
+      categoriaId: 2,
+      descricao: 'Conta de luz',
+      valor: 89.9,
+      tipo: 'DESPESA' as const,
+      dataPrevista: '2026-08-28',
+    };
+
+    it('criaUmLancamentoSimples', () => {
+      servico.criar(lancamento).subscribe();
+
+      const requisicao = http.expectOne(rota);
+      expect(requisicao.request.method).toBe('POST');
+      expect(requisicao.request.body).toEqual(lancamento);
+      requisicao.flush({ id: 9, ...lancamento, status: 'PREVISTA' });
+    });
+
+    it('criaAsParcelasEmUmaChamadaSo', () => {
+      let recebidas: unknown[] = [];
+      servico
+        .criarParcelado({
+          contaId: 1,
+          categoriaId: 2,
+          descricao: 'Curso',
+          valorTotal: 100,
+          tipo: 'DESPESA',
+          dataDaPrimeiraParcela: '2026-09-01',
+          totalParcelas: 3,
+        })
+        .subscribe((parcelas) => (recebidas = parcelas));
+
+      const requisicao = http.expectOne(`${rota}/parcelada`);
+      expect(requisicao.request.method).toBe('POST');
+      // A diferenca de centavos fica na ultima, e a soma fecha o total exato.
+      requisicao.flush([{ valor: 33.33 }, { valor: 33.33 }, { valor: 33.34 }]);
+
+      expect(recebidas).toHaveLength(3);
+    });
+
+    it('editaPeloId', () => {
+      servico.editar(9, lancamento).subscribe();
+
+      const requisicao = http.expectOne(`${rota}/9`);
+      expect(requisicao.request.method).toBe('PUT');
+      requisicao.flush({ id: 9, ...lancamento });
+    });
+
+    it('confirmaSemCorpo', () => {
+      servico.confirmar(9).subscribe();
+
+      const requisicao = http.expectOne(`${rota}/9/confirmar`);
+      expect(requisicao.request.method).toBe('PATCH');
+      requisicao.flush({ id: 9, status: 'CONFIRMADA' });
+    });
+
+    it('excluiPeloId', () => {
+      servico.excluir(9).subscribe();
+
+      const requisicao = http.expectOne(`${rota}/9`);
+      expect(requisicao.request.method).toBe('DELETE');
+      requisicao.flush(null);
+    });
+  });
 });

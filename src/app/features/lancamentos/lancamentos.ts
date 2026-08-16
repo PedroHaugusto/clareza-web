@@ -13,13 +13,14 @@ import {
 import { ErroDaApi } from '../../api/erro-da-api';
 import { CategoriaService } from '../../core/dados/categoria.service';
 import { ContaService } from '../../core/dados/conta.service';
+import { FormularioDeLancamento } from './formulario/formulario-de-lancamento';
 import { LancamentosService } from './lancamentos.service';
 
 const ATRASO_DA_BUSCA_EM_MS = 300;
 
 @Component({
   selector: 'app-lancamentos',
-  imports: [CurrencyPipe, DatePipe, ReactiveFormsModule],
+  imports: [CurrencyPipe, DatePipe, ReactiveFormsModule, FormularioDeLancamento],
   templateUrl: './lancamentos.html',
 })
 export class Lancamentos {
@@ -44,6 +45,14 @@ export class Lancamentos {
   protected readonly contas = signal<Conta[]>([]);
   protected readonly carregando = signal(true);
   protected readonly erro = signal<ErroDaApi | null>(null);
+
+  protected readonly formularioAberto = signal(false);
+  protected readonly emEdicao = signal<Transacao | null>(null);
+  protected readonly aExcluir = signal<Transacao | null>(null);
+  /** Id da transacao com acao em andamento, para desabilitar so aquela linha. */
+  protected readonly acaoEmCurso = signal<number | null>(null);
+  /** Mensagem de regra de dominio (422), ja redigida pela API para ser lida. */
+  protected readonly aviso = signal<string | null>(null);
 
   /**
    * Os filtros que produziram a lista atual — atualizados junto com a busca, nao a cada tecla.
@@ -107,6 +116,84 @@ export class Lancamentos {
 
   protected buscarDeNovo(): void {
     this.recarregar.next();
+  }
+
+  protected abrirCriacao(): void {
+    this.emEdicao.set(null);
+    this.formularioAberto.set(true);
+  }
+
+  protected abrirEdicao(transacao: Transacao): void {
+    this.emEdicao.set(transacao);
+    this.formularioAberto.set(true);
+  }
+
+  protected fecharFormulario(): void {
+    this.formularioAberto.set(false);
+    this.emEdicao.set(null);
+  }
+
+  protected aoSalvar(): void {
+    this.fecharFormulario();
+    this.buscarDeNovo();
+  }
+
+  protected confirmar(transacao: Transacao): void {
+    if (transacao.id === undefined || this.acaoEmCurso()) {
+      return;
+    }
+
+    this.acaoEmCurso.set(transacao.id);
+    this.aviso.set(null);
+
+    this.servico.confirmar(transacao.id).subscribe({
+      next: () => {
+        this.acaoEmCurso.set(null);
+        this.buscarDeNovo();
+      },
+      error: (erro: ErroDaApi) => {
+        this.acaoEmCurso.set(null);
+        // 422 aqui e regra de dominio com texto pronto — tipicamente confirmar duas vezes.
+        this.aviso.set(erro.mensagem);
+
+        // Se ja estava confirmada, a lista na tela e que esta velha (outra aba, outro
+        // dispositivo). Recarregar evita que o usuario clique de novo no mesmo botao morto.
+        if (erro.status === 422) {
+          this.buscarDeNovo();
+        }
+      },
+    });
+  }
+
+  protected pedirExclusao(transacao: Transacao): void {
+    this.aExcluir.set(transacao);
+  }
+
+  protected desistirDaExclusao(): void {
+    this.aExcluir.set(null);
+  }
+
+  protected excluir(): void {
+    const transacao = this.aExcluir();
+    if (!transacao || transacao.id === undefined) {
+      return;
+    }
+
+    this.acaoEmCurso.set(transacao.id);
+    this.aviso.set(null);
+
+    this.servico.excluir(transacao.id).subscribe({
+      next: () => {
+        this.acaoEmCurso.set(null);
+        this.aExcluir.set(null);
+        this.buscarDeNovo();
+      },
+      error: (erro: ErroDaApi) => {
+        this.acaoEmCurso.set(null);
+        this.aExcluir.set(null);
+        this.aviso.set(erro.mensagem);
+      },
+    });
   }
 
   protected limparFiltros(): void {

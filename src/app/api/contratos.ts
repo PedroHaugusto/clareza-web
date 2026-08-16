@@ -41,6 +41,11 @@ export type Conta = components['schemas']['RespostaConta'];
  */
 export type FiltroDeTransacoes = NonNullable<operations['listar']['parameters']['query']>;
 
+export type RequisicaoDeTransacao = components['schemas']['RequisicaoDeTransacao'];
+export type RequisicaoDeParcelamento = components['schemas']['RequisicaoDeParcelamento'];
+export type RequisicaoDeRecorrencia = components['schemas']['RequisicaoDeRecorrencia'];
+
 export type TipoTransacao = NonNullable<Transacao['tipo']>;
+export type Periodicidade = RequisicaoDeRecorrencia['periodicidade'];
 export type StatusTransacao = NonNullable<Transacao['status']>;
 export type PeriodoDeBusca = NonNullable<FiltroDeTransacoes['periodo']>;

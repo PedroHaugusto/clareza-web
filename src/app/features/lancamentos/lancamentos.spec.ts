@@ -267,6 +267,165 @@ describe('Lancamentos', () => {
     expect(elemento.textContent).toContain('Salario de agosto');
   });
 
+  describe('acoes', () => {
+    const botaoDaLinha = (indice: number, rotulo: string) =>
+      elemento.querySelectorAll('ul li')[indice].querySelector(`button[aria-label^="${rotulo}"]`) as
+        | HTMLButtonElement
+        | null;
+
+    it('naoOfereceConfirmar_quandoOLancamentoJaEstaConfirmado', () => {
+      criarEResponder();
+
+      expect(botaoDaLinha(0, 'Confirmar')).toBeNull();
+      expect(botaoDaLinha(1, 'Confirmar')).not.toBeNull();
+    });
+
+    it('confirmaERecarregaALista', () => {
+      criarEResponder();
+
+      botaoDaLinha(1, 'Confirmar')!.click();
+      fixture.detectChanges();
+
+      const confirmacao = http.expectOne(`${rota}/6/confirmar`);
+      expect(confirmacao.request.method).toBe('PATCH');
+      confirmacao.flush({ id: 6, status: 'CONFIRMADA' });
+      fixture.detectChanges();
+
+      http.expectOne((req) => req.url === rota).flush(transacoes);
+      fixture.detectChanges();
+    });
+
+    it('mostraAMensagemDaApi_quandoConfirmaDuasVezes', () => {
+      criarEResponder();
+
+      botaoDaLinha(1, 'Confirmar')!.click();
+      fixture.detectChanges();
+
+      http.expectOne(`${rota}/6/confirmar`).flush(
+        {
+          timestamp: '2026-08-16T05:16:56.791Z',
+          status: 422,
+          erro: 'Unprocessable Entity',
+          mensagem: 'Lancamento ja esta confirmado',
+          path: '/api/transacoes/6/confirmar',
+        },
+        { status: 422, statusText: 'Unprocessable Entity' },
+      );
+      fixture.detectChanges();
+
+      expect(elemento.querySelector('[role="alert"]')?.textContent).toContain(
+        'Lancamento ja esta confirmado',
+      );
+
+      // O 422 significa que a lista na tela envelheceu: recarregar evita o botao morto.
+      http
+        .expectOne((req) => req.url === rota)
+        .flush([transacoes[0], { ...transacoes[1], status: 'CONFIRMADA' }, transacoes[2]]);
+      fixture.detectChanges();
+      expect(botaoDaLinha(1, 'Confirmar')).toBeNull();
+    });
+
+    it('pedeConfirmacaoAntesDeExcluir', () => {
+      criarEResponder();
+
+      botaoDaLinha(0, 'Excluir')!.click();
+      fixture.detectChanges();
+
+      // Nada foi para o servidor so por clicar em excluir.
+      http.expectNone(`${rota}/5`);
+      expect(elemento.textContent).toContain('Excluir lancamento');
+    });
+
+    it('avisaQueExcluiSoAquelaParcela', () => {
+      criarEResponder();
+
+      botaoDaLinha(2, 'Excluir')!.click();
+      fixture.detectChanges();
+
+      expect(elemento.textContent).toContain('apenas a parcela 3/3');
+    });
+
+    it('excluiERecarrega_quandoOUsuarioConfirma', () => {
+      criarEResponder();
+
+      botaoDaLinha(0, 'Excluir')!.click();
+      fixture.detectChanges();
+
+      const dialogo = elemento.querySelectorAll('.fixed')[0];
+      const botoes = [...dialogo.querySelectorAll('button')];
+      botoes.find((botao) => botao.textContent?.trim() === 'Excluir')!.click();
+      fixture.detectChanges();
+
+      const exclusao = http.expectOne(`${rota}/5`);
+      expect(exclusao.request.method).toBe('DELETE');
+      exclusao.flush(null);
+      fixture.detectChanges();
+
+      http.expectOne((req) => req.url === rota).flush([]);
+      fixture.detectChanges();
+    });
+
+    it('naoExclui_quandoOUsuarioDesiste', () => {
+      criarEResponder();
+
+      botaoDaLinha(0, 'Excluir')!.click();
+      fixture.detectChanges();
+
+      const dialogo = elemento.querySelectorAll('.fixed')[0];
+      const botoes = [...dialogo.querySelectorAll('button')];
+      botoes.find((botao) => botao.textContent?.trim() === 'Cancelar')!.click();
+      fixture.detectChanges();
+
+      http.expectNone(`${rota}/5`);
+      expect(elemento.textContent).not.toContain('Excluir lancamento');
+    });
+
+    it('abreOFormularioVazio_paraNovoLancamento', () => {
+      criarEResponder();
+
+      const botoes = [...elemento.querySelectorAll('button')];
+      botoes.find((botao) => botao.textContent?.trim() === 'Novo lancamento')!.click();
+      fixture.detectChanges();
+
+      expect(elemento.textContent).toContain('Novo lancamento');
+      expect(
+        (elemento.querySelector('input[formControlName="descricao"]') as HTMLInputElement).value,
+      ).toBe('');
+    });
+
+    it('abreOFormularioPreenchido_paraEditar', () => {
+      criarEResponder();
+
+      botaoDaLinha(0, 'Editar')!.click();
+      fixture.detectChanges();
+
+      expect(elemento.textContent).toContain('Editar lancamento');
+      expect(
+        (elemento.querySelector('input[formControlName="descricao"]') as HTMLInputElement).value,
+      ).toBe('Salario de agosto');
+    });
+
+    it('fechaERecarrega_quandoOFormularioSalva', () => {
+      criarEResponder();
+
+      botaoDaLinha(0, 'Editar')!.click();
+      fixture.detectChanges();
+
+      const formulario = elemento.querySelector(
+        'app-formulario-de-lancamento form',
+      ) as HTMLFormElement;
+      formulario.dispatchEvent(new Event('submit', { cancelable: true }));
+      fixture.detectChanges();
+
+      http.expectOne(`${rota}/5`).flush({ id: 5 });
+      fixture.detectChanges();
+
+      expect(elemento.querySelector('app-formulario-de-lancamento')).toBeNull();
+      http.expectOne((req) => req.url === rota).flush(transacoes);
+      fixture.detectChanges();
+    });
+  });
+
   it('aindaListaOsLancamentos_quandoOsCadastrosDeApoioFalham', () => {
     fixture = TestBed.createComponent(Lancamentos);
     elemento = fixture.nativeElement as HTMLElement;

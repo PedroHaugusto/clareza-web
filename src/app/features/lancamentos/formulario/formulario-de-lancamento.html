@@ -1,0 +1,179 @@
+<div class="fixed inset-0 z-10 flex items-start justify-center overflow-y-auto bg-slate-900/40 p-4 sm:items-center">
+  <form
+    class="w-full max-w-lg rounded-2xl border border-slate-200 bg-white p-6 shadow-lg"
+    [formGroup]="formulario"
+    (ngSubmit)="enviar()"
+  >
+    <h2 class="text-lg font-semibold text-slate-900">
+      {{ editando() ? 'Editar lancamento' : 'Novo lancamento' }}
+    </h2>
+
+    @if (erro(); as falha) {
+      <p
+        class="mt-4 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700"
+        role="alert"
+      >
+        {{ falha.mensagem }}
+      </p>
+    }
+
+    <div class="mt-4 grid gap-4 sm:grid-cols-2">
+      <label class="sm:col-span-2">
+        <span class="text-sm font-medium text-slate-700">Descricao</span>
+        <input
+          type="text"
+          formControlName="descricao"
+          class="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-slate-900 outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100"
+        />
+        @if (formulario.controls.descricao.touched && formulario.controls.descricao.invalid) {
+          <span class="mt-1 block text-xs text-red-600">Informe uma descricao.</span>
+        } @else if (erroDoCampo('descricao'); as mensagem) {
+          <span class="mt-1 block text-xs text-red-600">{{ mensagem }}</span>
+        }
+      </label>
+
+      <label>
+        <span class="text-sm font-medium text-slate-700">Tipo</span>
+        <select
+          formControlName="tipo"
+          class="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-slate-900 outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100"
+        >
+          <option value="DESPESA">Despesa</option>
+          <option value="RECEITA">Receita</option>
+        </select>
+      </label>
+
+      <label>
+        <span class="text-sm font-medium text-slate-700">
+          {{ parcelando() ? 'Valor total' : 'Valor' }}
+        </span>
+        <input
+          type="number"
+          step="0.01"
+          min="0.01"
+          formControlName="valor"
+          class="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-slate-900 outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100"
+        />
+        @if (formulario.controls.valor.touched && formulario.controls.valor.invalid) {
+          <span class="mt-1 block text-xs text-red-600">Informe um valor maior que zero.</span>
+        } @else if (erroDoCampo('valor'); as mensagem) {
+          <span class="mt-1 block text-xs text-red-600">{{ mensagem }}</span>
+        } @else if (parcelando()) {
+          <span class="mt-1 block text-xs text-slate-500">
+            Sera dividido entre as parcelas.
+          </span>
+        }
+      </label>
+
+      <label>
+        <span class="text-sm font-medium text-slate-700">Categoria</span>
+        <select
+          formControlName="categoriaId"
+          class="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-slate-900 outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100"
+        >
+          <option value="">Selecione</option>
+          @for (categoria of categoriasCompativeis(); track categoria.id) {
+            <option [value]="categoria.id">{{ categoria.nome }}</option>
+          }
+        </select>
+        @if (formulario.controls.categoriaId.touched && formulario.controls.categoriaId.invalid) {
+          <span class="mt-1 block text-xs text-red-600">Escolha uma categoria.</span>
+        }
+      </label>
+
+      <label>
+        <span class="text-sm font-medium text-slate-700">Conta</span>
+        <select
+          formControlName="contaId"
+          class="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-slate-900 outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100"
+        >
+          <option value="">Selecione</option>
+          @for (conta of contas(); track conta.id) {
+            <option [value]="conta.id">{{ conta.nome }}</option>
+          }
+        </select>
+        @if (formulario.controls.contaId.touched && formulario.controls.contaId.invalid) {
+          <span class="mt-1 block text-xs text-red-600">Escolha uma conta.</span>
+        }
+      </label>
+
+      <label>
+        <span class="text-sm font-medium text-slate-700">
+          {{ parcelando() ? 'Primeira parcela' : 'Data' }}
+        </span>
+        <input
+          type="date"
+          formControlName="dataPrevista"
+          class="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-slate-900 outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100"
+        />
+        @if (erroDoCampo('dataPrevista'); as mensagem) {
+          <span class="mt-1 block text-xs text-red-600">{{ mensagem }}</span>
+        }
+      </label>
+
+      @if (!editando()) {
+        <label>
+          <span class="text-sm font-medium text-slate-700">Repeticao</span>
+          <select
+            formControlName="repeticao"
+            class="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-slate-900 outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100"
+          >
+            <option value="NENHUMA">Sem repeticao</option>
+            <option value="PARCELADO">Parcelado</option>
+            <option value="MENSAL">Mensal</option>
+            <option value="SEMANAL">Semanal</option>
+            <option value="ANUAL">Anual</option>
+          </select>
+        </label>
+
+        @if (parcelando()) {
+          <label>
+            <span class="text-sm font-medium text-slate-700">Parcelas</span>
+            <input
+              type="number"
+              min="2"
+              step="1"
+              formControlName="totalParcelas"
+              class="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-slate-900 outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100"
+            />
+            @if (formulario.controls.totalParcelas.invalid) {
+              <span class="mt-1 block text-xs text-red-600">Minimo de 2 parcelas.</span>
+            }
+          </label>
+        } @else if (formulario.controls.repeticao.value !== 'NENHUMA') {
+          <p class="self-end text-xs text-slate-500">
+            As ocorrencias dos proximos 12 meses ja entram na lista.
+          </p>
+        }
+      }
+    </div>
+
+    @if (!editando() && !parcelando() && formulario.controls.repeticao.value === 'NENHUMA') {
+      <label class="mt-4 flex items-center gap-2">
+        <input
+          type="checkbox"
+          formControlName="jaEfetivado"
+          class="h-4 w-4 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500"
+        />
+        <span class="text-sm text-slate-700">Ja foi pago/recebido</span>
+      </label>
+    }
+
+    <div class="mt-6 flex justify-end gap-3">
+      <button
+        type="button"
+        (click)="cancelar()"
+        class="rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-100"
+      >
+        Cancelar
+      </button>
+      <button
+        type="submit"
+        [disabled]="salvando()"
+        class="rounded-lg bg-emerald-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:bg-emerald-300"
+      >
+        {{ salvando() ? 'Salvando...' : 'Salvar' }}
+      </button>
+    </div>
+  </form>
+</div>
