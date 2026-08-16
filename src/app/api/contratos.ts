@@ -45,6 +45,21 @@ export type RequisicaoDeTransacao = components['schemas']['RequisicaoDeTransacao
 export type RequisicaoDeParcelamento = components['schemas']['RequisicaoDeParcelamento'];
 export type RequisicaoDeRecorrencia = components['schemas']['RequisicaoDeRecorrencia'];
 
+/** Corpo de `GET /api/previsao` — o cenario aplicado e os meses projetados. */
+export type Previsao = components['schemas']['RespostaPrevisao'];
+
+/** Um mes projetado. O `saldoProjetado` de um mes e o `saldoInicial` do proximo. */
+export type PrevisaoMensal = components['schemas']['RespostaPrevisaoMensal'];
+
+export type PreferenciaDeCenario = components['schemas']['RespostaPreferenciaCenario'];
+export type RequisicaoDePreferencia = components['schemas']['RequisicaoDePreferenciaCenario'];
+
+/** Corpo de `GET /api/fluxo-caixa` — serie continua de passado e futuro. */
+export type FluxoDeCaixa = components['schemas']['RespostaFluxoDeCaixa'];
+export type FluxoMensal = components['schemas']['RespostaFluxoMensal'];
+
+export type Cenario = NonNullable<Previsao['cenario']>;
+
 /** Corpo de `GET /api/calendario` — totais do mes e os dias que tem lancamento. */
 export type Calendario = components['schemas']['RespostaCalendario'];
 

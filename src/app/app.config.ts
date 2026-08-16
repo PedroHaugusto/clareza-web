@@ -34,5 +34,8 @@ export const appConfig: ApplicationConfig = {
     // sem repetir locale e moeda em cada template.
     { provide: LOCALE_ID, useValue: 'pt-BR' },
     { provide: DEFAULT_CURRENCY_CODE, useValue: 'BRL' },
+    // O Chart.js nao e registrado aqui de proposito: no bootstrap ele arrastaria a biblioteca
+    // inteira para o bundle inicial. Quem cuida disso e `core/graficos/registro.ts`, importado
+    // pelas duas telas que desenham grafico.
   ],
 };
