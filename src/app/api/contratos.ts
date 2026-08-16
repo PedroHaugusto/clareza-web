@@ -45,6 +45,12 @@ export type RequisicaoDeTransacao = components['schemas']['RequisicaoDeTransacao
 export type RequisicaoDeParcelamento = components['schemas']['RequisicaoDeParcelamento'];
 export type RequisicaoDeRecorrencia = components['schemas']['RequisicaoDeRecorrencia'];
 
+/** Corpo de `GET /api/calendario` — totais do mes e os dias que tem lancamento. */
+export type Calendario = components['schemas']['RespostaCalendario'];
+
+/** Um dia com movimento. Dias sem lancamento **nao vem** na resposta. */
+export type DiaDoCalendario = components['schemas']['RespostaDia'];
+
 export type RequisicaoDeCategoria = components['schemas']['RequisicaoDeCategoria'];
 export type RequisicaoDeConta = components['schemas']['RequisicaoDeConta'];
 

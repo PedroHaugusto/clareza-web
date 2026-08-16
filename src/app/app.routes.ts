@@ -29,6 +29,10 @@ export const routes: Routes = [
           import('./features/lancamentos/lancamentos').then((m) => m.Lancamentos),
       },
       {
+        path: 'calendario',
+        loadComponent: () => import('./features/calendario/calendario').then((m) => m.Calendario),
+      },
+      {
         path: 'cadastros',
         loadComponent: () => import('./features/cadastros/cadastros').then((m) => m.Cadastros),
       },
