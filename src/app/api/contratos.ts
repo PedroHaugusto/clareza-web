@@ -45,7 +45,12 @@ export type RequisicaoDeTransacao = components['schemas']['RequisicaoDeTransacao
 export type RequisicaoDeParcelamento = components['schemas']['RequisicaoDeParcelamento'];
 export type RequisicaoDeRecorrencia = components['schemas']['RequisicaoDeRecorrencia'];
 
+export type RequisicaoDeCategoria = components['schemas']['RequisicaoDeCategoria'];
+export type RequisicaoDeConta = components['schemas']['RequisicaoDeConta'];
+
 export type TipoTransacao = NonNullable<Transacao['tipo']>;
 export type Periodicidade = RequisicaoDeRecorrencia['periodicidade'];
+export type TipoCategoria = RequisicaoDeCategoria['tipo'];
+export type TipoConta = RequisicaoDeConta['tipo'];
 export type StatusTransacao = NonNullable<Transacao['status']>;
 export type PeriodoDeBusca = NonNullable<FiltroDeTransacoes['periodo']>;

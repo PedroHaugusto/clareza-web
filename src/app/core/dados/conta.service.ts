@@ -1,7 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
-import { Conta } from '../../api/contratos';
+import { Conta, RequisicaoDeConta } from '../../api/contratos';
 import { environment } from '../../../environments/environment';
 
 /**
@@ -14,5 +14,14 @@ export class ContaService {
 
   listar(): Observable<Conta[]> {
     return this.http.get<Conta[]>(`${environment.urlDaApi}/api/contas`);
+  }
+
+  criar(dados: RequisicaoDeConta): Observable<Conta> {
+    return this.http.post<Conta>(`${environment.urlDaApi}/api/contas`, dados);
+  }
+
+  /** Conta com lancamentos nao pode ser excluida: responde 422. */
+  excluir(id: number): Observable<void> {
+    return this.http.delete<void>(`${environment.urlDaApi}/api/contas/${id}`);
   }
 }

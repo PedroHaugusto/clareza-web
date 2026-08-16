@@ -44,4 +44,39 @@ describe('cadastros de apoio', () => {
 
     expect(recebidas.filter((conta) => conta.cartaoDeCredito)).toHaveLength(1);
   });
+
+  it('criaUmaCategoriaDoUsuario', () => {
+    TestBed.inject(CategoriaService)
+      .criar({ nome: 'Pets', tipo: 'DESPESA', corHex: '#AD1457' })
+      .subscribe();
+
+    const requisicao = http.expectOne(`${environment.urlDaApi}/api/categorias`);
+    expect(requisicao.request.method).toBe('POST');
+    expect(requisicao.request.body).toEqual({ nome: 'Pets', tipo: 'DESPESA', corHex: '#AD1457' });
+    requisicao.flush({ id: 9, nome: 'Pets', padraoDoSistema: false });
+  });
+
+  it('excluiUmaCategoriaPeloId', () => {
+    TestBed.inject(CategoriaService).excluir(9).subscribe();
+
+    const requisicao = http.expectOne(`${environment.urlDaApi}/api/categorias/9`);
+    expect(requisicao.request.method).toBe('DELETE');
+    requisicao.flush(null);
+  });
+
+  it('criaUmaConta', () => {
+    TestBed.inject(ContaService).criar({ nome: 'Carteira', tipo: 'CARTEIRA' }).subscribe();
+
+    const requisicao = http.expectOne(`${environment.urlDaApi}/api/contas`);
+    expect(requisicao.request.method).toBe('POST');
+    requisicao.flush({ id: 3, nome: 'Carteira', tipo: 'CARTEIRA', cartaoDeCredito: false });
+  });
+
+  it('excluiUmaContaPeloId', () => {
+    TestBed.inject(ContaService).excluir(3).subscribe();
+
+    const requisicao = http.expectOne(`${environment.urlDaApi}/api/contas/3`);
+    expect(requisicao.request.method).toBe('DELETE');
+    requisicao.flush(null);
+  });
 });

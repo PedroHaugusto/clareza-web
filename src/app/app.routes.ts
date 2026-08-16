@@ -28,6 +28,10 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./features/lancamentos/lancamentos').then((m) => m.Lancamentos),
       },
+      {
+        path: 'cadastros',
+        loadComponent: () => import('./features/cadastros/cadastros').then((m) => m.Cadastros),
+      },
       { path: '', pathMatch: 'full', redirectTo: 'visao-geral' },
     ],
   },

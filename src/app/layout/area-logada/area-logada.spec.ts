@@ -54,7 +54,7 @@ describe('AreaLogada', () => {
       link.getAttribute('href'),
     );
 
-    expect(destinos).toEqual(['/visao-geral', '/lancamentos']);
+    expect(destinos).toEqual(['/visao-geral', '/lancamentos', '/cadastros']);
   });
 
   it('limpaASessaoEVoltaParaOLogin_quandoOUsuarioSai', () => {
